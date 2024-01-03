@@ -1,0 +1,40 @@
+import heapq
+
+def heuristic(node, goal):
+    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+
+def astar(graph, start, goal):
+    heap = [(0, start)]
+    visited = set()
+
+    while heap:
+        (cost, current) = heapq.heappop(heap)
+
+        if current == goal:
+            return cost
+
+        if current in visited:
+            continue
+
+        visited.add(current)
+
+        for neighbor, edge_cost in graph[current].items():
+            total_cost = cost + edge_cost + heuristic(neighbor, goal)
+            heapq.heappush(heap, (total_cost, neighbor))
+
+    return float('inf')
+
+# Example usage with dynamic input:
+graph = {}
+
+# Add nodes and connections based on your problem.
+# Example: (0, 0) is connected to (0, 1) with a cost of 1.
+# graph[(0, 0)] = {(0, 1): 1, ...}
+
+# Input your graph, start node, and goal node dynamically:
+start_node = tuple(map(int, input("Enter start node (e.g., 0 0): ").split()))
+goal_node = tuple(map(int, input("Enter goal node (e.g., 1 1): ").split()))
+
+result = astar(graph, start_node, goal_node)
+
+print(f"Shortest path cost from {start_node} to {goal_node}: {result}")
