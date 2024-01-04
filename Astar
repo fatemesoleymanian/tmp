@@ -1,39 +1,127 @@
 import heapq
 
-def heuristic(node, goal):
-    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+class Node:
+    def __init__(self, state, g=0, h=0):
+        self.state = state
+        self.g = g  # cost from start to current node
+        self.h = h  # heuristic cost from current node to goal
+        self.parent = None  # pointer to the parent node
 
-def astar(graph, start, goal):
-    heap = [(0, start)]
-    visited = set()
+    def __lt__(self, other):
+        # Comparison method for heapq
+        return (self.g + self.h) < (other.g + other.h)
 
-    while heap:
-        (cost, current) = heapq.heappop(heap)
+def astar_search(start, goal, graph):
+    open_set = [Node(start, 0, heuristic(start, goal))]
+    closed_set = set()
 
-        if current == goal:
-            return cost
+    while open_set:
+        current_node = heapq.heappop(open_set)
 
-        if current in visited:
-            continue
+        if current_node.state == goal:
+            # Reconstruct the path
+            path = []
+            while current_node:
+                path.append(current_node.state)
+                current_node = current_node.parent
+            return path[::-1]
 
-        visited.add(current)
+        closed_set.add(current_node.state)
 
-        for neighbor in graph[current]:
-            heapq.heappush(heap, (cost + graph[current][neighbor] + heuristic(neighbor, goal), neighbor))
+        for neighbor, cost in graph[current_node.state]:
+            if neighbor not in closed_set:
+                g = current_node.g + cost
+                h = heuristic(neighbor, goal)
+                new_node = Node(neighbor, g, h)
+                new_node.parent = current_node
 
-    return float('inf')  # No path found
+                # Check if the neighbor is already in the open set with a lower cost
+                if not any(node.g + node.h < g + h and node.state == neighbor for node in open_set):
+                    heapq.heappush(open_set, new_node)
+
+    return None  # No path found
+
+def heuristic(state, goal):
+    # Replace this with your own heuristic function
+    return 0
 
 # Example usage:
+# Assuming the graph is represented as an adjacency list
+# Replace this with your own graph representation
 graph = {
-    (0, 0): {(0, 1): 1, (1, 0): 1},
-    (0, 1): {(0, 0): 1, (1, 1): 1},
-    (1, 0): {(0, 0): 1, (1, 1): 1},
-    (1, 1): {(0, 1): 1, (1, 0): 1}
+    'S': [('A', 1)],
+    'A': [('B', 1), ('D', 8), ('E', 3)],
+    'B': [('C', 1)],
+    'E': [('D', 1)],
+    'D': [('G', 2)],
+    'C': [],
+    'G': []
 }
 
-start_node = (0, 0)
-goal_node = (1, 1)
+start_state = 'S'
+goal_state = 'G'
 
-result = astar(graph, start_node, goal_node)
+path = astar_search(start_state, goal_state, graph)
 
-print(f"Shortest path cost from {start_node} to {goal_node}: {result}")
+if path:
+    print("Path from {} to {}: {}".format(start_state, goal_state, path))
+else:
+    print("No path found.")
+
+
+
+
+#example1
+graph = {
+    'S': [('A', 1)],
+    'A': [('B', 1), ('D', 8), ('E', 3)],
+    'B': [('C', 1)],
+    'E': [('D', 1)],
+    'D': [('G', 2)],
+    'C': [],
+    'G': []
+}
+
+#example2
+graph = {
+  'Oradea': [('Zerind', 71),('Sibiu', 151),],
+  'Zerind': [('Arad', 75), ('Oradea', 71)],
+  'Arad': [('Sibiu', 140), ('Timisoara', 118),('Zerind',75)],
+  'Timisoara': [('Arad', 118), ('Lugoj', 111)],
+  'Lugoj':[('Timisoara', 111), ('Mehadia', 70)],
+  'Mehadia': [('Duberta', 75), ('Lugoj', 70)],
+  'Duberta': [('Mehadia', 75), ('Craiova', 120)],
+  'Sibiu': [('Fagaras', 99),('Rimnicu Vilcea', 80),('Oradea', 151),('Arad', 140)],
+  'Rimnicu Vilcea': [('Pitesti', 97),('Craiova', 146),('Sibiu', 80)],
+  'Craiova': [('Rimnicu Vilcea', 146),('Pitesti', 138),('Duberta', 120)],
+  'Fagaras': [('Sibiu',99),('Bucharest',211)],
+  'Pitesti': [('Rimnicu Vilcea', 97), ('Bucharest', 101),('Craiova', 138)],
+  'Lasi': [('Vaslui', 92),('Neamt',87)],
+  'Neamt':[],
+  'Urziceni': [('Bucharest', 85), ('Vaslui', 142), ('Hirsova', 98)],
+  'Hirsova':[('Eforie',86),('Urziceni',98)],
+  'Eforie': [],
+  'Vaslui':[('Lasi',92),('Urziceni',142)],
+  'Giurgiu':[('Bucharest',90)],
+  'Bucharest': [('Fagaras', 211),('Urziceni', 85),('Pitesti', 101),('Giurgiu', 90)]
+}
+
+
+start_state = 'Arad'
+goal_state = 'Bucharest'
+
+
+#example3
+graph = {
+    'A': [('B', 5), ('C', 3)],
+    'B': [('D', 7), ('E', 2)],
+    'C': [('F', 4)],
+    'D': [('G', 8)],
+    'E': [('G', 1)],
+    'F': [('G', 6)],
+    'G': []
+}
+
+
+start_state = 'A'
+goal_state = 'G'
